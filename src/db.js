@@ -3,13 +3,18 @@ const { Sequelize } = require('sequelize');
 const fs = require('fs');
 const path = require('path');
 const {
-  DB_USER, DB_PASSWORD, DB_HOST,DB_NAME
-} = process.env;
+  DATABASE_URL
+}= process.env;
 
-const sequelize = new Sequelize(`postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}`, {
+const sequelize = new Sequelize(`${DATABASE_URL}`,{
   logging: false, // set to console.log to see the raw SQL queries
   native: false, // lets Sequelize know we can use pg-native for ~30% more speed
-  port:5432,
+  dialectOptions:{
+   ssl: {
+ require:true,
+   rejectUnauthorized:false
+  }                             
+   },
 });
 const basename = path.basename(__filename);
 
@@ -31,11 +36,13 @@ sequelize.models = Object.fromEntries(capsEntries);
 
 // En sequelize.models están todos los modelos importados como propiedades
 // Para relacionarlos hacemos un destructuring
-const { Persona, Time } = sequelize.models;
-Persona.belongsToMany(Time, {through: "Persona-Time"});
+const { Dog, Temperamento,Videogame, Genre,Recipe, db } = sequelize.models;
 
+Dog.belongsToMany(Temperamento, {through: "dog-temperamento"});
+Temperamento.belongsToMany(Dog, {through: "dog-temperamento"});
 
-
+Videogame.belongsToMany(Genre, {through: "Videogame-Genre"});
+Genre.belongsToMany(Videogame, {through: "Videogame-Genre"});
 
 
 // Aca vendrian las relaciones
